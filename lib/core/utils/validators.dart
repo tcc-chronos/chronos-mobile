@@ -5,10 +5,10 @@ class Validators {
   }
 
   static String? lastN(String? v) {
-    if (v == null || v.trim().isEmpty) return 'Informe N';
+    if (v == null || v.trim().isEmpty) return 'Informe o intervalo de coleta';
     final n = int.tryParse(v);
     if (n == null) return 'Valor inválido';
-    if (n < 1 || n > 100) return 'N deve ser entre 1 e 100';
+    if (n < 1 || n > 100) return 'O intervalo de coleta deve ser entre 1 e 100';
     return null;
   }
 
