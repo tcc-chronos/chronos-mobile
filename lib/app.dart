@@ -20,6 +20,7 @@ class _FiwareChartsAppState extends State<FiwareChartsApp> {
       colorSchemeSeed: const Color.fromARGB(255, 92, 192, 207),
       useMaterial3: true,
       brightness: Brightness.light,
+      splashFactory: InkRipple.splashFactory,
     );
 
     return MaterialApp(
