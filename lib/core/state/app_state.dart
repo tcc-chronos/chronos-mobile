@@ -108,12 +108,6 @@ class AppState extends ChangeNotifier {
                 entityId: _settings.entityId,
                 attribute: attr,
                 lastN: _settings.lastN,
-                dateFromIso: _settings.mode == QueryMode.dateRange
-                    ? _settings.dateFromIso
-                    : null,
-                dateToIso: _settings.mode == QueryMode.dateRange
-                    ? _settings.dateToIso
-                    : null,
               )
               .then((points) => map[attr] = points),
         );
