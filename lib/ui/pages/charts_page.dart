@@ -28,7 +28,7 @@ class ChartsPage extends StatelessWidget {
             ? EmptyState(
                 title: 'Sem dados carregados',
                 subtitle:
-                    'Toque em "Atualizar dados" para buscar os últimos registros no STH‑Comet.',
+                    'Toque em "Atualizar dados" para buscar os últimos registros no STH-Comet.',
                 icon: Icons.cloud_download_outlined,
                 onAction: s.loadingSeries ? null : s.refreshSeries,
                 actionLabel: 'Atualizar dados',
@@ -39,7 +39,7 @@ class ChartsPage extends StatelessWidget {
                   const SizedBox(height: 8),
                   for (final entry in s.series.entries)
                     ChartCard(title: entry.key, data: entry.value),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 48),
                 ],
               );
 
@@ -47,7 +47,10 @@ class ChartsPage extends StatelessWidget {
           visible: s.loadingSeries,
           child: Scaffold(
             appBar: AppBar(
-              title: Text(title),
+              title: Text(
+                title,
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              ),
               actions: [
                 IconButton(
                   tooltip: 'Atualizar dados',
@@ -60,7 +63,7 @@ class ChartsPage extends StatelessWidget {
             floatingActionButton: configured
                 ? FloatingActionButton.extended(
                     onPressed: s.loadingSeries ? null : s.refreshSeries,
-                    icon: const Icon(Icons.cloud_download),
+                    icon: const Icon(Icons.refresh),
                     label: const Text('Atualizar dados'),
                   )
                 : null,

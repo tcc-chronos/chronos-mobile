@@ -99,7 +99,12 @@ class _SettingsPageState extends State<SettingsPage> {
         final devices = s.devices;
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Configurações')),
+          appBar: AppBar(
+            title: Text(
+              'Configurações',
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            ),
+          ),
           body: ListView(
             padding: const EdgeInsets.all(16),
             children: [

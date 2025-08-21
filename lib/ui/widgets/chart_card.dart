@@ -11,32 +11,60 @@ class ChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final df = DateFormat('HH:mm\nMM-dd');
+    final axisDf = DateFormat('HH:mm\nMM-dd'); // eixos
+    final tooltipDf = DateFormat('dd/MM/yyyy HH:mm:ss'); // tooltip
+    final nf = NumberFormat('##0.##');
 
     if (data.isEmpty) {
       return Card(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text('$title — sem dados no intervalo.'),
+        child: const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text('Sem dados no intervalo.'),
         ),
       );
     }
 
+    // X: milissegundos UTC
     final xs = data
         .map((e) => e.time.millisecondsSinceEpoch.toDouble())
         .toList();
     final ys = data.map((e) => e.value).toList();
 
-    final minX = xs.first;
-    final maxX = xs.last;
-    final minY = ys.reduce((a, b) => a < b ? a : b);
-    final maxY = ys.reduce((a, b) => a > b ? a : b);
+    // Faixas brutas
+    final rawMinX = xs.first;
+    final rawMaxX = xs.last;
+    final rawMinY = ys.reduce((a, b) => a < b ? a : b);
+    final rawMaxY = ys.reduce((a, b) => a > b ? a : b);
 
-    List<FlSpot> spots = [
+    // Padding (5% do range) + fallbacks p/ ranges nulos
+    final xRange = (rawMaxX - rawMinX).abs();
+    final yRange = (rawMaxY - rawMinY).abs();
+
+    final xPad = xRange == 0
+        ? const Duration(minutes: 1).inMilliseconds.toDouble()
+        : xRange * 0.05;
+    final yPad = yRange == 0 ? (rawMaxY.abs() * 0.1 + 1) : yRange * 0.05;
+
+    final minX = rawMinX - xPad;
+    final maxX = rawMaxX + xPad;
+    final minY = rawMinY - yPad;
+    final maxY = rawMaxY + yPad;
+
+    // Intervalos de marcação (4 divisões aproximadamente)
+    final xTick = (maxX - minX) / 4;
+    final yTick = (maxY - minY) / 4;
+
+    final spots = [
       for (final p in data)
         FlSpot(p.time.millisecondsSinceEpoch.toDouble(), p.value),
     ];
+
+    // Helper para esconder rótulos nos extremos (evita sobreposição)
+    bool isExtreme(double v, double lo, double hi) {
+      final eps = (hi - lo).abs() * 0.001;
+      return (v - lo).abs() <= eps || (v - hi).abs() <= eps;
+    }
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -54,7 +82,7 @@ class ChartCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             SizedBox(
-              height: 220,
+              height: 240,
               child: LineChart(
                 LineChartData(
                   minX: minX,
@@ -66,19 +94,51 @@ class ChartCard extends StatelessWidget {
                     show: true,
                     border: const Border.fromBorderSide(BorderSide(width: .8)),
                   ),
+                  lineTouchData: LineTouchData(
+                    handleBuiltInTouches: true,
+                    touchTooltipData: LineTouchTooltipData(
+                      fitInsideHorizontally: true,
+                      fitInsideVertically: true,
+                      tooltipPadding: const EdgeInsets.all(4),
+                      getTooltipItems: (touchedSpots) {
+                        return touchedSpots.map((barSpot) {
+                          final y = nf.format(barSpot.y);
+                          final dt = DateTime.fromMillisecondsSinceEpoch(
+                            barSpot.x.toInt(),
+                            isUtc: true,
+                          );
+                          final when = tooltipDf.format(dt);
+                          return LineTooltipItem(
+                            '$y\n$when',
+                            TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onInverseSurface,
+                            ),
+                          );
+                        }).toList();
+                      },
+                    ),
+                  ),
                   titlesData: FlTitlesData(
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        interval: (maxX - minX) / 4,
+                        interval: xTick,
                         getTitlesWidget: (value, meta) {
+                          if (isExtreme(value, minX, maxX)) {
+                            return const SizedBox.shrink();
+                          }
                           final dt = DateTime.fromMillisecondsSinceEpoch(
                             value.toInt(),
                             isUtc: true,
                           );
                           return Padding(
                             padding: const EdgeInsets.only(top: 6.0),
-                            child: Text(df.format(dt)),
+                            child: Text(
+                              axisDf.format(dt),
+                              textAlign: TextAlign.center,
+                            ),
                           );
                         },
                       ),
@@ -86,7 +146,14 @@ class ChartCard extends StatelessWidget {
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 40,
+                        reservedSize: 48,
+                        interval: yTick == 0 ? 1 : yTick,
+                        getTitlesWidget: (value, meta) {
+                          if (isExtreme(value, minY, maxY)) {
+                            return const SizedBox.shrink();
+                          }
+                          return Text(nf.format(value));
+                        },
                       ),
                     ),
                     rightTitles: const AxisTitles(
@@ -98,10 +165,10 @@ class ChartCard extends StatelessWidget {
                   ),
                   lineBarsData: [
                     LineChartBarData(
-                      isCurved: true,
+                      isCurved: false,
                       spots: spots,
-                      dotData: const FlDotData(show: false),
                       barWidth: 2,
+                      dotData: const FlDotData(show: true),
                     ),
                   ],
                 ),

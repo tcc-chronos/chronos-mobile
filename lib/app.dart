@@ -17,7 +17,7 @@ class _FiwareChartsAppState extends State<FiwareChartsApp> {
   @override
   Widget build(BuildContext context) {
     final theme = ThemeData(
-      colorSchemeSeed: Colors.teal,
+      colorSchemeSeed: const Color.fromARGB(255, 92, 192, 207),
       useMaterial3: true,
       brightness: Brightness.light,
     );
@@ -25,14 +25,15 @@ class _FiwareChartsAppState extends State<FiwareChartsApp> {
     return MaterialApp(
       title: 'FIWARE Charts',
       theme: theme,
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: SafeArea(child: _pages[_index]),
         bottomNavigationBar: NavigationBar(
           selectedIndex: _index,
-          destinations: const [
+          destinations: [
             NavigationDestination(
-              icon: Icon(Icons.show_chart_outlined),
-              selectedIcon: Icon(Icons.show_chart),
+              icon: Icon(Icons.show_chart),
+              selectedIcon: Icon(Icons.stacked_line_chart_rounded),
               label: 'Gráficos',
             ),
             NavigationDestination(
