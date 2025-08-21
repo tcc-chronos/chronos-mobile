@@ -2,6 +2,14 @@
 
 App Flutter (Android-first) para visualizar séries históricas de **sensores FIWARE** (STH-Comet) com interface simples e dois fluxos: **Gráficos** e **Configurações**.
 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/4d5ef89b-4ce7-4b1b-8f5b-66833de7cbae" width="30%" />
+  <img src="https://github.com/user-attachments/assets/67732884-0edf-453e-b5f6-9f1bed70d770" width="30%" />
+  <img src="https://github.com/user-attachments/assets/dcd211d0-75cb-4864-b0ff-f2065a6d280d" width="30%" />
+</p>
+
+---
+
 ## Funcionalidades
 
 * **2 abas com navegação inferior**: Gráficos e Configurações.
