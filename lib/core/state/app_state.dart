@@ -69,7 +69,10 @@ class AppState extends ChangeNotifier {
 
     try {
       final list = await _api.fetchDevices(_settings.ip);
-      _devices = list;
+      final mapByEntity = <String, Device>{
+        for (final d in list) d.entityName: d,
+      };
+      _devices = mapByEntity.values.toList();
     } catch (e) {
       _errorMessage = 'Falha ao obter devices: $e';
     } finally {

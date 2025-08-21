@@ -46,4 +46,13 @@ class Device {
     'entity_type': entityType,
     'attributes': attributes.map((e) => e.toJson()).toList(),
   };
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is Device && other.entityName == entityName);
+  }
+
+  @override
+  int get hashCode => entityName.hashCode;
 }
