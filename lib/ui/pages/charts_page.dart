@@ -38,8 +38,8 @@ class ChartsPage extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 24),
                 children: [
                   const SizedBox(height: 8),
-                  for (final entry in s.series.entries)
-                    ChartCard(title: entry.key, data: entry.value),
+                  for (final attr in s.settings.attributes)
+                    ChartCard(title: attr, data: s.series[attr] ?? const []),
                   const SizedBox(height: 48),
                 ],
               );
