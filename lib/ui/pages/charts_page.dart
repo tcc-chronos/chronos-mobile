@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../core/state/app_state.dart';
 import '../widgets/chart_card.dart';
 import '../widgets/empty_state.dart';
-import '../widgets/loading_overlay.dart';
 
 class ChartsPage extends StatelessWidget {
   const ChartsPage({super.key});
@@ -31,7 +30,9 @@ class ChartsPage extends StatelessWidget {
                     'Toque em "Atualizar dados" para buscar os últimos registros no STH-Comet.',
                 icon: Icons.cloud_download_outlined,
                 onAction: s.loadingSeries ? null : s.refreshSeries,
-                actionLabel: 'Atualizar dados',
+                actionLabel: s.loadingSeries
+                    ? 'Atualizando...'
+                    : 'Atualizar dados',
               )
             : ListView(
                 padding: const EdgeInsets.only(bottom: 24),
@@ -43,31 +44,53 @@ class ChartsPage extends StatelessWidget {
                 ],
               );
 
-        return LoadingOverlay(
-          visible: s.loadingSeries,
-          child: Scaffold(
-            appBar: AppBar(
-              title: Text(
-                title,
-                style: TextStyle(color: Theme.of(context).colorScheme.primary),
-              ),
-              actions: [
-                IconButton(
-                  tooltip: 'Atualizar dados',
-                  onPressed: s.loadingSeries ? null : s.refreshSeries,
-                  icon: const Icon(Icons.refresh),
-                ),
-              ],
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              title,
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
             ),
-            body: body,
-            floatingActionButton: configured
-                ? FloatingActionButton.extended(
-                    onPressed: s.loadingSeries ? null : s.refreshSeries,
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Atualizar dados'),
-                  )
-                : null,
+            actions: [
+              IconButton(
+                tooltip: 'Atualizar dados',
+                onPressed: s.loadingSeries ? null : s.refreshSeries,
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: s.loadingSeries
+                      ? const SizedBox(
+                          key: ValueKey('spin'),
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.refresh, key: ValueKey('icon')),
+                ),
+              ),
+            ],
           ),
+          body: body,
+          floatingActionButton: configured
+              ? FloatingActionButton.extended(
+                  onPressed: s.loadingSeries ? null : s.refreshSeries,
+                  icon: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: s.loadingSeries
+                        ? const SizedBox(
+                            key: ValueKey('fabspin'),
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(
+                            Icons.cloud_download,
+                            key: ValueKey('fabicon'),
+                          ),
+                  ),
+                  label: Text(
+                    s.loadingSeries ? 'Atualizando...' : 'Atualizar dados',
+                  ),
+                )
+              : null,
         );
       },
     );
