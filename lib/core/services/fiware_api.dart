@@ -31,21 +31,15 @@ class FiwareApi {
     return list;
   }
 
-  /// GET http://{ip}:8666/STH/v1/contextEntities/type/{type}/id/{id}/attributes/{attr}?lastN=... [&dateFrom=...&dateTo=...]
-  Future<List<SeriesPoint>> fetchAttributeSeries({
+  /// GET http://{ip}:8666/STH/v1/contextEntities/type/{type}/id/{id}/attributes/{attr}?lastN=... [&dateFrom=...&dateTo=...]&count=true
+  Future<SeriesFetchResult> fetchAttributeSeries({
     required String ip,
     required String entityType,
     required String entityId,
     required String attribute,
     required int lastN,
-    String? dateFromIso,
-    String? dateToIso,
   }) async {
-    final q = <String, String>{'lastN': lastN.toString()};
-    if (dateFromIso != null && dateFromIso.isNotEmpty) {
-      q['dateFrom'] = dateFromIso;
-    }
-    if (dateToIso != null && dateToIso.isNotEmpty) q['dateTo'] = dateToIso;
+    final q = <String, String>{'lastN': lastN.toString(), 'count': 'true'};
 
     final uri = Uri.http(
       '$ip:8666',
@@ -58,19 +52,24 @@ class FiwareApi {
       throw Exception('Erro ao obter $attribute: HTTP ${res.statusCode}');
     }
 
+    final totalHeader =
+        res.headers['fiware-total-count'] ?? res.headers['Fiware-Total-Count'];
+    final int? totalCount = int.tryParse(totalHeader ?? '');
+
     final json = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
     final responses = json['contextResponses'] as List<dynamic>?;
 
     if (responses == null || responses.isEmpty) {
-      return <SeriesPoint>[];
+      return SeriesFetchResult(points: const [], totalCount: totalCount);
     }
 
     final contextElement =
         (responses.first as Map<String, dynamic>)['contextElement']
             as Map<String, dynamic>?;
-
     final attributes = contextElement?['attributes'] as List<dynamic>? ?? [];
-    if (attributes.isEmpty) return <SeriesPoint>[];
+    if (attributes.isEmpty) {
+      return SeriesFetchResult(points: const [], totalCount: totalCount);
+    }
 
     final values =
         (attributes.first as Map<String, dynamic>)['values']
@@ -89,9 +88,8 @@ class FiwareApi {
       points.add(SeriesPoint(dt.toUtc(), n.toDouble()));
     }
 
-    // ordenar por tempo crescente
     points.sort((a, b) => a.time.compareTo(b.time));
-    return points;
+    return SeriesFetchResult(points: points, totalCount: totalCount);
   }
 
   void dispose() {

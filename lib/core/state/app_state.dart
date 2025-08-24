@@ -21,6 +21,9 @@ class AppState extends ChangeNotifier {
   Map<String, List<SeriesPoint>> _series = {};
   Map<String, List<SeriesPoint>> get series => _series;
 
+  Map<String, int> _totalByAttr = {};
+  Map<String, int> get totalByAttr => _totalByAttr;
+
   bool _loadingSeries = false;
   bool get loadingSeries => _loadingSeries;
 
@@ -99,25 +102,30 @@ class AppState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final futures = <Future<void>>[];
-      final map = <String, List<SeriesPoint>>{};
-
-      for (final attr in _settings.attributes) {
-        futures.add(
-          _api
-              .fetchAttributeSeries(
-                ip: _settings.ip,
-                entityType: _settings.entityType,
-                entityId: _settings.entityId,
-                attribute: attr,
-                lastN: _settings.lastN,
-              )
-              .then((points) => map[attr] = points),
+      final attrs = List<String>.from(_settings.attributes);
+      final futures = attrs.map((attr) {
+        return _api.fetchAttributeSeries(
+          ip: _settings.ip,
+          entityType: _settings.entityType,
+          entityId: _settings.entityId,
+          attribute: attr,
+          lastN: _settings.lastN,
         );
+      }).toList();
+
+      final results = await Future.wait(futures);
+
+      final orderedSeries = <String, List<SeriesPoint>>{};
+      final totals = <String, int>{};
+
+      for (var i = 0; i < attrs.length; i++) {
+        orderedSeries[attrs[i]] = results[i].points;
+        final t = results[i].totalCount;
+        if (t != null) totals[attrs[i]] = t;
       }
 
-      await Future.wait(futures);
-      _series = map;
+      _series = orderedSeries;
+      _totalByAttr = totals;
     } catch (e) {
       _errorMessage = 'Falha ao atualizar dados: $e';
     } finally {

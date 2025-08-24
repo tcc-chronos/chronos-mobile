@@ -39,7 +39,11 @@ class ChartsPage extends StatelessWidget {
                 children: [
                   const SizedBox(height: 8),
                   for (final attr in s.settings.attributes)
-                    ChartCard(title: attr, data: s.series[attr] ?? const []),
+                    ChartCard(
+                      attribute: attr,
+                      data: s.series[attr] ?? const [],
+                      totalCount: s.totalByAttr[attr],
+                    ),
                   const SizedBox(height: 48),
                 ],
               );

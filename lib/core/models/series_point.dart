@@ -4,3 +4,9 @@ class SeriesPoint {
 
   SeriesPoint(this.time, this.value);
 }
+
+class SeriesFetchResult {
+  final List<SeriesPoint> points;
+  final int? totalCount;
+  SeriesFetchResult({required this.points, required this.totalCount});
+}
