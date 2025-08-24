@@ -52,6 +52,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _save() async {
+    FocusScope.of(context).unfocus();
+
     if (!_formKey.currentState!.validate()) return;
 
     final app = context.read<AppState>();
@@ -115,6 +117,8 @@ class _SettingsPageState extends State<SettingsPage> {
                           children: [
                             TextFormField(
                               controller: _ip,
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (_) => _save(),
                               decoration: const InputDecoration(
                                 labelText: 'IP do servidor FIWARE',
                                 hintText: 'Ex.: 172.0.0.1',
@@ -190,6 +194,8 @@ class _SettingsPageState extends State<SettingsPage> {
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _lastN,
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (_) => _save(),
                               decoration: const InputDecoration(
                                 labelText: 'Intervalo de coleta (1-100)',
                                 border: OutlineInputBorder(),
